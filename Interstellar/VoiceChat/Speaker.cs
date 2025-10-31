@@ -41,8 +41,8 @@ public class ManualSpeaker : ISpeaker
     public void Read(IList<float> buffer)
     {
         if(tempArray == null || tempArray.Length < buffer.Count) tempArray = new float[buffer.Count];
-        this.speakerContext?.GetEndpoint()?.Read(tempArray, 0, buffer.Count);
-        for(int i = 0; i < buffer.Count; i++) buffer[i] = tempArray[i];
+        int length = this.speakerContext?.GetEndpoint()?.Read(tempArray, 0, buffer.Count) ?? 0;
+        for(int i = 0; i < buffer.Count; i++) buffer[i] = i < length ? tempArray[i] : 0f;
     }
 
     

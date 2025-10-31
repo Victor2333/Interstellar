@@ -33,7 +33,7 @@ public class VolumeRouter : AbstractAudioNodeProvider<VolumeRouter.Property>
             }
             else
             {
-                Array.Clear(buffer, offset, count);
+                for (int i = 0; i < count; i++) buffer[offset + i] = 0f;
                 return count;
             }
         }
