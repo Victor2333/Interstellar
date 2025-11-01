@@ -12,6 +12,9 @@ internal class VCClient
     VCClientService service;
     VCRoom myRoom;
     Profile? profile = null;
+
+    public bool IsClosed => service.ConnectionState == WebSocketSharp.WebSocketState.Closed;
+
     public bool IsMute { get; private set; } = false;
 
     public VCRoom Room => myRoom;

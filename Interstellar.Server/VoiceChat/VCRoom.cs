@@ -20,6 +20,21 @@ internal class VCRoom
         myKey = key;
     }
 
+    private void CheckAlive()
+    {
+        foreach (var closed in fastClients.Where(c => c.Value.IsClosed).ToArray())
+        {
+            try
+            {
+                Leave(closed.Value);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while removing closed client: " + ex);
+            }
+        }
+    }
+
     private byte AvailableId()
     {
         byte id = 0;
@@ -29,11 +44,14 @@ internal class VCRoom
 
     public VCClient Join(VCClientService service)
     {
+        CheckAlive();
+
         var client = new VCClient(service, AvailableId(), this);
         fastClients.Add(client.ClientId, client);
         
         //入室を通知する。
         long currentMask = CurrentVoiceMask;
+
         foreach (var c in fastClients.Values)
         {
             if(c.ClientId != client.ClientId) c.OnJoinOrLeaveAnyone(currentMask);
@@ -44,12 +62,13 @@ internal class VCRoom
 
     public void Leave(VCClient client)
     {
-        if(fastClients.Remove(client.ClientId))
+        if (fastClients.Remove(client.ClientId))
         {
             //退室を通知する。
             long currentMask = CurrentVoiceMask;
             foreach (var c in fastClients.Values)
             {
+                if (c.IsClosed) continue;
                 c.OnJoinOrLeaveAnyone(currentMask);
                 c.NoticeLeaveClient(client.ClientId);
             }
