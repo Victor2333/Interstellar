@@ -11,6 +11,7 @@ public class VCRoomParameters
     public VCRoom.OnUpdateProfile? OnUpdateProfile;
     public VCRoom.CustomMessageHandler? MessageHandler;
     public VCRoom.OnDisconnect? OnDisconnect;
+    public VCRoom.OnUpdateMuteStatus? OnUpdateMuteStatus;
     public int BufferMaxLength = 4096;
     public int BufferLength = 2048;
 
@@ -31,10 +32,12 @@ public class VCRoom : IConnectionContext, IHasAudioPropertyNode, IMicrophoneCont
     private readonly OnUpdateProfile? onUpdateProfile;
     private readonly CustomMessageHandler? onCustomMessage;
     private readonly OnDisconnect? onDisconnect;
+    private readonly OnUpdateMuteStatus? onUpdateMuteStatus;
     private bool loopBack = false;
 
     public delegate void OnConnectClient(int clientId, AudioRoutingInstance routing, bool isLocalClient);
     public delegate void OnUpdateProfile(int clientId, byte playerId, string playerName);
+    public delegate void OnUpdateMuteStatus(int clientId, bool mute);
     public delegate void OnDisconnect(int clientId);
     public delegate void CustomMessageHandler(byte[] message);
 
@@ -53,6 +56,7 @@ public class VCRoom : IConnectionContext, IHasAudioPropertyNode, IMicrophoneCont
         this.onUpdateProfile = additionalParameters?.OnUpdateProfile;
         this.onCustomMessage = additionalParameters?.MessageHandler;
         this.onDisconnect = additionalParameters?.OnDisconnect;
+        this.onUpdateMuteStatus = additionalParameters?.OnUpdateMuteStatus;
 
         this.connection = new RoomConnection(this, roomCode, region, url);
         this.audioManager = new AudioManager(audioRouter, additionalParameters?.BufferLength ?? 2048, additionalParameters?.BufferMaxLength ?? 4096);
@@ -173,6 +177,11 @@ public class VCRoom : IConnectionContext, IHasAudioPropertyNode, IMicrophoneCont
         {
             pooledProfile[clientId] = (playerName, playerId);
         }
+    }
+
+    void IConnectionContext.OnReceiveMuteStatus(int clientId, bool isMute)
+    {
+        onUpdateMuteStatus?.Invoke(clientId, isMute);
     }
 
     void OnAudioSent(float[] buffer, int count)

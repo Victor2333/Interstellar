@@ -26,6 +26,7 @@ public class LevelMeterRouter : AbstractAudioNodeProvider<LevelMeterRouter.Prope
             {
                 if(Level < buffer[offset + i]) Level = buffer[offset + i];
             }
+            if (Level > 1.0f) Level = 1.0f;
             return read;
         }
 

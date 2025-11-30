@@ -35,6 +35,13 @@ internal interface IConnectionContext
     void OnClientProfileUpdated(int clientId, string playerName, byte playerId);
 
     /// <summary>
+    /// ミュート状態の更新を受け取ったときに呼び出されます。
+    /// </summary>
+    /// <param name="clientId"></param>
+    /// <param name="isMute"></param>
+    void OnReceiveMuteStatus(int clientId, bool isMute);
+
+    /// <summary>
     /// カスタムメッセージを受け取ったときに呼び出されます。
     /// </summary>
     /// <param name="message"></param>
@@ -173,11 +180,15 @@ internal class RoomConnection : IMessageProcessor
                 break;
             case MessageTag.ShareProfile:
                 var profile = ShareProfileMessage.DeserializeWithoutTag(bytes, out read);
-                context.OnClientProfileUpdated(profile.PlayerId, profile.PlayerName, profile.PlayerId);
+                context.OnClientProfileUpdated(profile.AudioId, profile.PlayerName, profile.PlayerId);
                 break;
             case MessageTag.NoticeDisconnect:
                 var disconnect =NoticeDisconnectMessage.DeserializeWithoutTag(bytes, out read);
                 context.OnClientDisconnected(disconnect.ClientId);
+                break;
+            case MessageTag.ShareMuteStatus:
+                var muteStatus = ShareMuteStatusMessage.DeserializeWithoutTag(bytes, out read);
+                context.OnReceiveMuteStatus(muteStatus.ClientId, muteStatus.IsMute);
                 break;
             case MessageTag.Custom:
                 context.OnCustomMessageReceived(bytes.ToArray());
